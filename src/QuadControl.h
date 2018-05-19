@@ -5,6 +5,8 @@
 #include "Trajectory.h"
 #include "BaseController.h"
 
+#define sqrt_2 1.414213f
+
 class QuadControl : public BaseController
 {
 public:

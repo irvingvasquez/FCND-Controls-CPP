@@ -53,6 +53,7 @@ void QuadControl::Init()
 #endif
 }
 
+
 VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momentCmd)
 {
   // Convert a desired 3-axis moment and collective thrust command to 
@@ -69,16 +70,38 @@ VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momen
   // You'll need the arm length parameter L, and the drag/thrust ratio kappa
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-
-  cmd.desiredThrustsN[0] = mass * 9.81f / 4.f; // front left
-  cmd.desiredThrustsN[1] = mass * 9.81f / 4.f; // front right
-  cmd.desiredThrustsN[2] = mass * 9.81f / 4.f; // rear left
-  cmd.desiredThrustsN[3] = mass * 9.81f / 4.f; // rear right
-
+  
+  //printf("thrust: %f  mx: %f my: %f  mz: %f \n", collThrustCmd, momentCmd.x, momentCmd.y, momentCmd.z);
+  
+  float a_bar = -collThrustCmd;
+  float b_bar = sqrt_2 * momentCmd.x / L;
+  float c_bar = sqrt_2 * momentCmd.y / L;
+  float d_bar = momentCmd.z / kappa;
+  
+  //printf("a: %f  b: %f c: %f  d: %f \n", a_bar, b_bar, c_bar, d_bar);
+  
+  float f_3 = (-1.0f / 4.0f) * (c_bar - a_bar + d_bar - b_bar);
+  float f_4 = (-1.0f/2.0f) * (c_bar - a_bar + 2 * f_3);
+  float f_2 = (-1.0f/2.0f) * (b_bar-a_bar + 2*f_4);
+  float f_1 = a_bar - f_2 - f_4 - f_3;
+  
+  //printf("f1: %f  f2: %f f3: %f  f4: %f \n", f_1, f_2, f_3, f_4);
+  
+  //cmd.desiredThrustsN[0] = mass * 9.81f / 4.f; // front left
+  //cmd.desiredThrustsN[1] = mass * 9.81f / 4.f; // front right
+  //cmd.desiredThrustsN[2] = mass * 9.81f / 4.f; // rear left
+  //cmd.desiredThrustsN[3] = mass * 9.81f / 4.f; // rear right
+  
+  cmd.desiredThrustsN[0] = f_1; // front left
+  cmd.desiredThrustsN[1] = f_2; // front right
+  cmd.desiredThrustsN[2] = f_3; // rear left
+  cmd.desiredThrustsN[3] = f_4; // rear right
+  
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
   return cmd;
 }
+
 
 V3F QuadControl::BodyRateControl(V3F pqrCmd, V3F pqr)
 {
@@ -98,12 +121,19 @@ V3F QuadControl::BodyRateControl(V3F pqrCmd, V3F pqr)
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
 
+  float u_bar_p = kpPQR.x * (pqrCmd.x - pqr.x) ;
+  float u_bar_q = kpPQR.y * (pqrCmd.y - pqr.y) ;
+  float u_bar_r = kpPQR.z * (pqrCmd.z - pqr.z) ;
   
+  momentCmd.x = Ixx * u_bar_p;
+  momentCmd.y = Iyy * u_bar_q;
+  momentCmd.z = Izz * u_bar_r;
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
-
+  //printf("cmx: %f  cmy: %f \n", momentCmd.x, momentCmd.y);
   return momentCmd;
 }
+
 
 // returns a desired roll and pitch rate 
 V3F QuadControl::RollPitchControl(V3F accelCmd, Quaternion<float> attitude, float collThrustCmd)
@@ -128,7 +158,7 @@ V3F QuadControl::RollPitchControl(V3F accelCmd, Quaternion<float> attitude, floa
   Mat3x3F R = attitude.RotationMatrix_IwrtB();
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-
+  
 
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
