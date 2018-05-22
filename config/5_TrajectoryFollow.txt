@@ -36,4 +36,7 @@ TrajectoryOffset=0,-1.5,0
 ControlConfig = QuadControlParamsFF
 
 [QuadControlParamsFF:QuadControlParams]
-Trajectory=traj/FigureEightFF.txt
+#Trajectory=traj/FigureEightFF.txt
+#Trajectory=traj/HelixNoFF.txt
+#Trajectory=traj/FigureEight_vel.txt
+Trajectory=traj/HelixVelYaw.txt
